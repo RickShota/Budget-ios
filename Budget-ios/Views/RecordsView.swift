@@ -4,7 +4,6 @@ import SwiftUI
 
 struct RecordsView: View {
     @Environment(BudgetStore.self) private var store
-    @Environment(\.dismiss) private var dismiss
 
     @State private var filter: RecordFilter = .all
     @State private var collapsedMonths: Set<String> = []
@@ -62,6 +61,7 @@ struct RecordsView: View {
                                     RecordRow(record: record)
                                 }
                                 .buttonStyle(.plain)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                     Button(role: .destructive) {
                                         pendingDelete = record
@@ -88,22 +88,10 @@ struct RecordsView: View {
                     }
                 }
             }
-
-            Section {
-                Button {
-                    dismiss()
-                } label: {
-                    Label("记一笔", systemImage: "plus.circle.fill")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 2)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .clearListRowBackground()
-            }
         }
         .appListStyle()
+        .compactListSectionSpacing()
+        .environment(\.defaultMinListRowHeight, 38)
         .navigationTitle("收支明细")
         .sheet(item: $editingRecord) { record in
             RecordEditorSheet(record: record)
@@ -216,17 +204,17 @@ struct RecordRow: View {
 
     var body: some View {
         let isIncome = record.type == .income
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: Categories.symbol(for: record.cat, type: record.type))
-                .font(.footnote.weight(.semibold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(isIncome ? Color.green : Color.secondary)
-                .frame(width: 34, height: 34)
+                .frame(width: 28, height: 28)
                 .background(
                     (isIncome ? Color.green : Color.secondary).opacity(0.12),
                     in: Circle()
                 )
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 4) {
                     Text(record.cat)
                         .font(.subheadline.weight(.medium))
@@ -239,7 +227,7 @@ struct RecordRow: View {
                     }
                 }
                 Text(record.date + (record.periodId == nil ? " · 未计入账期" : ""))
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundStyle(.secondary)
             }
 
@@ -250,7 +238,6 @@ struct RecordRow: View {
                 .monospacedDigit()
                 .foregroundStyle(isIncome ? Color.green : Color.primary)
         }
-        .padding(.vertical, 2)
         .contentShape(Rectangle())
     }
 }
