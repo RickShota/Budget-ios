@@ -9,6 +9,7 @@ struct AddEntryView: View {
     @State private var amountText = ""
     @State private var note = ""
     @State private var date = Date()
+    @FocusState private var amountFocused: Bool
     @ScaledMetric(relativeTo: .largeTitle) private var amountFontSize: CGFloat = 32
 
     private var selectedCat: String {
@@ -32,6 +33,17 @@ struct AddEntryView: View {
         .background(Color.appGroupedBackground)
         .dismissKeyboardOnScroll()
         .navigationTitle("记一笔")
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                saveButton
+            }
+        }
+    }
+
+    private var saveButton: some View {
+        Button("保存", action: save)
+            .fontWeight(.semibold)
+            .keyboardShortcut(.defaultAction)
     }
 
     // MARK: - 当前账期条
@@ -77,6 +89,7 @@ struct AddEntryView: View {
                     .foregroundStyle(.secondary)
                 TextField("0.00", text: $amountText)
                     .decimalPadKeyboard()
+                    .focused($amountFocused)
                     .multilineTextAlignment(.center)
                     .font(.system(size: amountFontSize, weight: .heavy, design: .rounded))
                     .monospacedDigit()
@@ -120,15 +133,6 @@ struct AddEntryView: View {
                 DatePicker("日期", selection: $date, displayedComponents: .date)
                     .labelsHidden()
             }
-
-            Button(action: save) {
-                Text("保存")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 5)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
 
             Text(hintText)
                 .font(.footnote)
@@ -223,7 +227,6 @@ struct AddEntryView: View {
 
         amountText = ""
         note = ""
-        date = Date()
-        store.selectedTab = .home
+        amountFocused = false
     }
 }
