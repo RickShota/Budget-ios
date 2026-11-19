@@ -40,7 +40,7 @@ struct ContentView: View {
                 NavigationStack { SettingsView() }
             }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
+        .tabBarMinimizeBehavior(.never)
     }
     #endif
 
