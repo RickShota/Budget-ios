@@ -139,6 +139,16 @@ extension View {
         #endif
     }
 
+    /// iOS 上压缩列表分段间距（macOS 不提供该 API）
+    @ViewBuilder
+    func compactListSectionSpacing() -> some View {
+        #if os(iOS)
+        listSectionSpacing(.compact)
+        #else
+        self
+        #endif
+    }
+
     /// 居中并限制内容宽度，适配 iPad 与 Mac 的大窗口
     func readableWidth(_ width: CGFloat = 640) -> some View {
         frame(maxWidth: width, alignment: .leading)
@@ -328,6 +338,36 @@ enum Categories {
             return hit.symbol
         }
         return aliases[cat] ?? "sparkles"
+    }
+
+    /// 分类配色：扇形图与图例共用，未知分类落到灰色
+    static func color(for cat: String) -> Color {
+        switch cat {
+        case "餐饮", "伙食":
+            .orange
+        case "零食", "社交", "人情":
+            .pink
+        case "网购", "日用":
+            .purple
+        case "交通", "通勤", "旅行":
+            .blue
+        case "转账", "借出", "借出垫付":
+            .teal
+        case "医疗":
+            .red
+        case "娱乐", "学习":
+            .indigo
+        case "房租", "住房", "月供", "还款":
+            .brown
+        case "通讯", "话费", "宽带", "订阅":
+            .cyan
+        case "买菜", "宠物":
+            .green
+        case "服饰":
+            .mint
+        default:
+            .gray
+        }
     }
 }
 

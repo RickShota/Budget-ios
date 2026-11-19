@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 struct HomeView: View {
@@ -114,18 +115,6 @@ struct HomeView: View {
         }
 
         categorySection(for: period)
-
-        Button {
-            store.selectedTab = .add
-        } label: {
-            Label("记一笔", systemImage: "plus.circle.fill")
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 4)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .padding(.top, 2)
     }
 
     // MARK: - 消费速率
@@ -192,6 +181,7 @@ struct HomeView: View {
     @ViewBuilder
     private func categorySection(for period: BudgetPeriod) -> some View {
         let stats = store.categoryStats(for: period)
+        let total = stats.reduce(0) { $0 + $1.amount }
 
         SectionTitle("本期分类统计")
 
@@ -203,41 +193,50 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
             } else {
-                let total = stats.reduce(0) { $0 + $1.amount }
-                let maxValue = stats.map(\.amount).max() ?? 1
+                Chart(stats) { stat in
+                    SectorMark(
+                        angle: .value("金额", stat.amount),
+                        innerRadius: .ratio(0.62),
+                        angularInset: 1.5
+                    )
+                    .cornerRadius(3)
+                    .foregroundStyle(Categories.color(for: stat.cat))
+                }
+                .chartLegend(.hidden)
+                .frame(height: 190)
+                .overlay {
+                    VStack(spacing: 2) {
+                        Text("本期支出")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(Money.string(total))
+                            .font(.headline.weight(.bold))
+                            .monospacedDigit()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .padding(.horizontal, 24)
+                }
+                .accessibilityLabel("本期分类支出扇形图")
 
-                VStack(spacing: 13) {
+                VStack(spacing: 10) {
                     ForEach(stats) { stat in
-                        VStack(spacing: 6) {
-                            HStack(spacing: 8) {
-                                Image(systemName: Categories.symbol(for: stat.cat, type: .expense))
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 20)
-                                Text(stat.cat)
-                                    .font(.subheadline)
-                                Spacer()
-                                Text(Money.string(stat.amount))
-                                    .font(.subheadline.weight(.semibold))
-                                    .monospacedDigit()
-                                Text("\(Int((stat.amount / total * 100).rounded()))%")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 36, alignment: .trailing)
-                            }
-                            BarView(value: max(0.04, stat.amount / maxValue), color: .accentColor, height: 6)
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(Categories.color(for: stat.cat))
+                                .frame(width: 8, height: 8)
+                            Text(stat.cat)
+                                .font(.subheadline)
+                            Spacer()
+                            Text(Money.string(stat.amount))
+                                .font(.subheadline.weight(.semibold))
+                                .monospacedDigit()
+                            Text("\(Int((stat.amount / total * 100).rounded()))%")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(width: 36, alignment: .trailing)
                         }
                     }
-
-                    Divider()
-
-                    HStack {
-                        Text("共 \(stats.count) 个分类")
-                        Spacer()
-                        Text("合计 \(Money.string(total))")
-                    }
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
                 }
             }
         }
